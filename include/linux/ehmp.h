@@ -13,7 +13,6 @@
 
 #include <linux/plist.h>
 
-#ifdef CONFIG_CGROUP_SCHEDTUNE
 enum stune_group {
 	STUNE_ROOT,
 	STUNE_FOREGROUND,
@@ -21,7 +20,6 @@ enum stune_group {
 	STUNE_TOPAPP,
 	STUNE_GROUP_COUNT,
 };
-#endif
 
 struct gb_qos_request {
 	struct plist_node node;
@@ -63,8 +61,8 @@ static inline int exynos_need_active_balance(enum cpu_idle_type idle,
 static inline unsigned long global_boost(void) { return 0; }
 static inline int find_second_max_cap(void) { return -EINVAL; }
 
-static inline int exynos_select_cpu(struct task_struct *p,
-						int prev_cpu) { return -EINVAL; }
+//static inline int exynos_select_cpu(struct task_struct *p,
+//						int prev_cpu) { return -EINVAL; }
 static inline int exynos_select_cpu(struct task_struct *p, int prev_cpu,
 					int sync, int sd_flag) { return -EINVAL; }
 

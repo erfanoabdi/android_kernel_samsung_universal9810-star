@@ -12,9 +12,7 @@
 #include "sched.h"
 #include "tune.h"
 
-#ifdef CONFIG_CGROUP_SCHEDTUNE
 bool schedtune_initialized = false;
-#endif
 
 unsigned int sysctl_sched_cfs_boost __read_mostly;
 
@@ -611,7 +609,7 @@ int schedtune_prefer_idle(struct task_struct *p)
 	return prefer_idle;
 }
 
-#ifdef CONFIG_SCHED_EHMP
+//#ifdef CONFIG_SCHED_EHMP
 static atomic_t kernel_prefer_perf_req[BOOSTGROUPS_COUNT];
 int kernel_prefer_perf(int grp_idx)
 {
@@ -631,9 +629,9 @@ void request_kernel_prefer_perf(int grp_idx, int enable)
 	else
 		BUG_ON(atomic_dec_return(&kernel_prefer_perf_req[grp_idx]) < 0);
 }
-#else
-static inline int kernel_prefer_perf(int grp_idx) { return 0; }
-#endif
+//#else
+//static inline int kernel_prefer_perf(int grp_idx) { return 0; }
+//#endif
 
 
 int schedtune_prefer_perf(struct task_struct *p)
@@ -1192,6 +1190,27 @@ schedtune_init_cgroups(void)
 }
 
 #else /* CONFIG_CGROUP_SCHEDTUNE */
+
+#define BOOSTGROUPS_COUNT 7
+static atomic_t kernel_prefer_perf_req[BOOSTGROUPS_COUNT];
+int kernel_prefer_perf(int grp_idx)
+{
+    if (grp_idx >= BOOSTGROUPS_COUNT)
+        return -EINVAL;
+
+    return atomic_read(&kernel_prefer_perf_req[grp_idx]);
+}
+
+void request_kernel_prefer_perf(int grp_idx, int enable)
+{
+    if (grp_idx >= BOOSTGROUPS_COUNT)
+        return;
+
+    if (enable)
+        atomic_inc(&kernel_prefer_perf_req[grp_idx]);
+    else
+        BUG_ON(atomic_dec_return(&kernel_prefer_perf_req[grp_idx]) < 0);
+}
 
 int
 schedtune_accept_deltas(int nrg_delta, int cap_delta,
